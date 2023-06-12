@@ -1,0 +1,45 @@
+server: # service port 지정
+  port: 0 # randomPort
+
+eureka: # 이 서비스를 Eureka 서  버에 등록하겠다
+  instance:
+    instance-id: ${spring.cloud.client.hostname}:${spring.application.name}:${random.value}}
+    # instance-id: ${spring.application.name}:${spring.application.instance_id}:${random.value}}
+  client:
+    register-with-eureka: true
+    fetch-registry: true # Eureka 서버로부터 갱신된 instance 정보를 주기적으로 받겠다
+    service-url: # ServiceDiscovery서버 URL
+      defaultZone: http://127.0.0.1:8761/eureka
+
+spring: # 이 서비스의 고유Name 지정
+  application:
+    version: 1.0.0
+    name: catalog-service
+  sql:
+    init:
+      mode: always # 모든 DB에 SQL Script 실행
+      platform: postgres
+  jpa:
+    open-in-view: false
+    database: postgresql
+    hibernate:
+      default_batch_fetch_size: 100
+      dialect: org.hibernate.dialect.PostgreSQLDialect
+    properties:
+      hibernate:
+        format_sql: true
+    defer-datasource-initialization: true # 필수(script 파일이 hibernate 초기화 이후 동작하게 하기 위한 옵션)
+--- #local 환경
+spring:
+  config:
+    activate:
+      on-profile: local
+  #    import: application-auth.yml
+  jpa:
+    hibernate.ddl-auto: create-drop
+    generate-ddl: true
+logging:
+  level:
+    root: info
+    org.hibernate.SQL: debug
+    org.hibernate.type.descriptor.sql: trace
