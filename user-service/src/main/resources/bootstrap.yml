@@ -1,0 +1,8 @@
+spring:
+  cloud:
+    config:
+      uri: http://127.0.0.1:8888 # config server 주소
+      name: ecommerce # ecommerce.yml 정보 가져오겠다
+#
+#  profiles:
+#    active: dev # config server에서 ecommerce-dev.yml 가져오겠다
