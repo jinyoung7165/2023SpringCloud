@@ -1,0 +1,14 @@
+server:
+  port: 8888
+
+spring:
+  application:
+    version: 1.0.0
+    name: config-service
+  cloud:
+    config:
+      server:
+        git:
+          uri: file:D:\jinyoung\Documents\2023SpringCloud\git-local-repo
+          # username: {}. private 원격 repo 이용시 git login
+          # password: {}
