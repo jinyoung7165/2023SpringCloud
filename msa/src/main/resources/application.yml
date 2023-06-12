@@ -1,0 +1,24 @@
+server: # 유레카 웹 서버 8761 개방
+  port: 8761
+
+spring: # 이 서비스의 고유Name 지정
+  application:
+    version: 1.0.0
+    name: servicediscovery
+
+eureka: # 이 서비스를 Eureka 서버(자신)에 등록하지 않겠다
+  client:
+    register-with-eureka: false
+    fetch-registry: false
+#--- #local 환경
+#spring:
+#  config:
+#    activate:
+#      on-profile: local
+#    import: application-oauth.yml
+#  jpa.hibernate.ddl-auto: create-drop
+#logging:
+#  level:
+#    root: info
+#    org.hibernate.SQL: debug
+#    org.hibernate.type.descriptor.sql: trace
