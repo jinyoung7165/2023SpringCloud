@@ -1,0 +1,88 @@
+server: # service port 지정 http://localhost:8000으로 모든 client 요청 들어옴
+  port: 8000
+
+spring: # 이 서비스의 고유Name 지정
+  application:
+    version: 1.0.0
+    name: apigateway-service
+  cloud:
+    gateway: # 비동기 -> Tomcat 대신 Netty 내장 서버에서 작동
+      default-filters:
+        - name: GlobalFilter
+          args:
+            baseMessage: Spring Cloud Gateway Global Filter
+            preLogger: true
+            postLogger: true
+      routes:
+#        - id: first-service # 서비스 이름
+#          uri: lb://MY-FIRST-SERVICE # NamingServer에 등록된 정보(app이름) 찾아서 forward
+#          predicates: # client가 http://localhost:8000/first-service/** 요청 -> http://localhost:8081/first-service/**로 route됨
+#            - Path=/first-service/**
+#          filters: # Header조작하는 filter 추가 (AddRequestHeader=key, value)
+#            - AddRequestHeader=first-request, first-request-header2
+#            - AddResponseHeader=first-response, first-response-header2
+#        - id: second-service # 서비스 이름
+#          uri: http://localhost:8082/ # 헤딩 uri로 forward해라
+#          predicates: # client가 http://localhost:8000/second-service/** 요청 -> http://localhost:8082/second-service/**로 route됨
+#            - Path=/second-service/**
+#          filters:
+#            - name: CustomFilter
+#            - name: LoggingFilter # args 넘기려면 name key 필요
+#              args:
+#                baseMessage: Spring Cloud Gateway Logging Filter
+#                preLogger: true
+#                postLogger: true
+        - id: user-service
+          uri: lb://USER-SERVICE
+          predicates:
+            - Path=/user-service/login # 로그인
+            - Method=POST
+          filters:
+            - RemoveRequestHeader=Cookie # 전달되는 값 매번 새롭게 받기 위해
+            - RewritePath=/user-service/(?<segment>.*), /$\{segment} # APIGateway로 전달되는 path에서 user-service 떼고 userService로 route시킴
+        - id: user-service
+          uri: lb://USER-SERVICE
+          predicates:
+            - Path=/user-service/users # 회원가입
+            - Method=POST
+          filters:
+            - RemoveRequestHeader=Cookie # 전달되는 값 매번 새롭게 받기 위해
+            - RewritePath=/user-service/(?<segment>.*), /$\{segment}
+        - id: user-service
+          uri: lb://USER-SERVICE
+          predicates:
+            - Path=/user-service/** # user 정보 확인
+            - Method=GET
+          filters:
+            - RemoveRequestHeader=Cookie
+            - RewritePath=/user-service/(?<segment>.*), /$\{segment}
+            - AuthHeaderFilter # 로그인/회원가입 외의 요청에 대해 jwt 검증 필요
+        - id: user-service
+          uri: lb://USER-SERVICE
+          predicates:
+            - Path=/user-service/actuator/**
+            - Method=GET, POST
+          filters:
+            - RemoveRequestHeader=Cookie
+            - RewritePath=/user-service/(?<segment>.*), /$\{segment}
+        - id: catalog-service
+          uri: lb://CATALOG-SERVICE
+          predicates:
+            - Path=/catalog-service/**
+        - id: order-service
+          uri: lb://ORDER-SERVICE
+          predicates:
+            - Path=/order-service/**
+
+eureka: # 이 서비스를 Eureka 서버에 등록하겠다
+  client:
+    register-with-eureka: true
+    fetch-registry: true # Eureka 서버로부터 갱신된 instance 정보를 주기적으로 받겠다
+    service-url: # ServiceDiscovery서버 URL
+      defaultZone: http://127.0.0.1:8761/eureka
+
+management: # actuator로 확인할 수 있는 정보
+  endpoints:
+    web:
+      exposure: # post refresh -> config refresh, httptrace -> 통신 추적하겠음
+        include: refresh, health, beans, httptrace
