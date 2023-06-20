@@ -5,6 +5,11 @@ spring:
   application:
     version: 1.0.0
     name: config-service
+#  rabbitmq:
+#    host: 127.0.0.1
+#    port: 5672
+#    username: guest
+#    password: guest
   cloud:
     config:
       server:
@@ -12,3 +17,8 @@ spring:
           uri: file:D:\jinyoung\Documents\2023SpringCloud\git-local-repo
           # username: {}. private 원격 repo 이용시 git login
           # password: {}
+management: # actuator endpoint 추가
+  endpoints:
+    web:
+      exposure: # busrefresh -> rabbitmq에게 변경 사항 전달하겠다
+        include: health, busrefresh

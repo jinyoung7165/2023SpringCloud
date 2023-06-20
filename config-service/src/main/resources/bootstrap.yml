@@ -1,0 +1,2 @@
+encrypt:
+  key: abcdefg012345 # 대칭키로 쓰겠다
