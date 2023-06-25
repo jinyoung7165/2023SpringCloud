@@ -1,5 +1,6 @@
 package cloudclud.msa.userservice.service.impl;
 
+import cloudclud.msa.userservice.client.OrderServiceClient;
 import cloudclud.msa.userservice.dto.UserDto;
 import cloudclud.msa.userservice.jpa.UserEntity;
 import cloudclud.msa.userservice.jpa.UserRepository;
@@ -7,10 +8,7 @@ import cloudclud.msa.userservice.service.UserService;
 import cloudclud.msa.userservice.vo.ResponseOrder;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.core.env.Environment;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -31,6 +29,8 @@ public class UserServiceImpl implements UserService {
     private final BCryptPasswordEncoder passwordEncoder;
 
     private final RestTemplate restTemplate;
+
+    private final OrderServiceClient orderServiceClient;
 
     private final Environment env;
 
@@ -68,18 +68,24 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserDto getUserWithOrdersByUserId(String userId) {
         UserDto userDto = getUserByUserId(userId);
-//        List<ResponseOrder> orders = new ArrayList<>();
-//        userDto.setOrders(orders);
 
         /* Using RestTemplate */
         // String orderUrl = "http://127.0.0.1:8000/order-service/%s/orders";
-        String orderUrl = String.format(env.getProperty("order_service.url"), userId);
-        ResponseEntity<List<ResponseOrder>> orderResponseList = restTemplate.exchange(orderUrl, HttpMethod.GET, null,
-            new ParameterizedTypeReference<List<ResponseOrder>>() {
+//        String orderUrl = String.format(env.getProperty("order_service.url"), userId);
+//        ResponseEntity<List<ResponseOrder>> orderResponseList = restTemplate.exchange(orderUrl, HttpMethod.GET, null,
+//            new ParameterizedTypeReference<List<ResponseOrder>>() {});
+//
+//        List<ResponseOrder> orderList = orderResponseList.getBody();
 
-        });
-
-        List<ResponseOrder> orderList = orderResponseList.getBody();
+        /* Using FeignClient */
+//        List<ResponseOrder> orderList = null;
+//        try{
+//            orderList = orderServiceClient.getOrders(userId);
+//        } catch (FeignException ex) {
+//            log.error(ex.getMessage());
+//        }
+        // ErrorDecoder가 FeignException 헨들링 해줄 것
+        List<ResponseOrder> orderList = orderServiceClient.getOrders(userId);
         userDto.setOrders(orderList);
         return userDto;
     }
